@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,6 +53,12 @@ namespace BankAppEF
             services.AddScoped<IBusinessBanking, BusinessBanking>();
             services.AddScoped<IBusinessAuthentication, BusinessAuthentication>();
             services.AddSingleton<CacheAbstraction>();
+            services.AddDistributedMemoryCache();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost";
+                options.InstanceName = "SampleInstance";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,6 +77,8 @@ namespace BankAppEF
             }
             var appServices = app.ApplicationServices;
             var cacheService = appServices.GetRequiredService<CacheAbstraction>();
+            var redisService = (IDistributedCache)appServices.GetRequiredService(typeof(IDistributedCache));
+            RedisCacheHelper.IDISTCACHE = redisService;
             CacheAbstractionHelper.CABS = cacheService;
             app.UseSession();
             HttpContextHelper.Configure(app.ApplicationServices.GetRequiredService <IHttpContextAccessor>());

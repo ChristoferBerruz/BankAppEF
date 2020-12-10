@@ -13,7 +13,7 @@ namespace BankAppEF.Cache
         {
             _iwebCache = webCache;
         }
-        public CacheAbstraction() : this(new CouchBaseCacheAdapter()) { }
+        public CacheAbstraction() : this(new RedisCacheAdapter()) { }
         public void Remove(string key)
         {
             _iwebCache.Remove(key);
