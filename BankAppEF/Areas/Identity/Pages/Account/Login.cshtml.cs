@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using BankAppEF.ServicesBusiness;
+using BankAppEF.Models;
+using BankAppEF.Utils;
 
 namespace BankAppEF.Areas.Identity.Pages.Account
 {
@@ -20,14 +23,16 @@ namespace BankAppEF.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        IBusinessAuthentication _businessAuth = null;
 
         public LoginModel(SignInManager<IdentityUser> signInManager, 
             ILogger<LoginModel> logger,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager, IBusinessAuthentication businessAuth)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _businessAuth = businessAuth;
         }
 
         [BindProperty]
@@ -83,6 +88,12 @@ namespace BankAppEF.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    string username = Input.Email;
+                    UserInfo userInfo = _businessAuth.GetUserInfo(username);
+                    if(userInfo != null)
+                    {
+                        SessionFacade.USERINFO = userInfo;
+                    }
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
