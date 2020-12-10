@@ -1,5 +1,6 @@
 ﻿using BankAppEF.Models;
 using BankAppEF.Models.ViewModels;
+using BankAppEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -81,6 +82,13 @@ namespace BankAppEF.DataLayer
         {
             try
             {
+                List<TransactionHistoryVM> transHistories = null;
+                string checkAcctNum = SessionFacade.USERINFO.CheckingAccountNumber.ToString();
+                transHistories = CacheAbstractionHelper.CABS.Retrieve<List<TransactionHistoryVM>>("TRHISTORY_"+checkAcctNum);
+                if(transHistories != null)
+                {
+                    return transHistories;
+                }
                 var res = (from transactionHistoryRecord in _dbContext.TransactionHistories
                            join transactionTypeRecord in _dbContext.TransactionTypes on
                            transactionHistoryRecord.TransactionTypeId equals transactionTypeRecord.TransactionTypeId
@@ -94,6 +102,8 @@ namespace BankAppEF.DataLayer
                                TransactionTypeName = transactionTypeRecord.TransactionTypeName,
                                TransactionDate = transactionHistoryRecord.TransactionDate,
                            }).ToList<TransactionHistoryVM>();
+
+                CacheAbstractionHelper.CABS.Insert("TRHISTORY_" + checkAcctNum, res);
                 return res;
             }
             catch (Exception)

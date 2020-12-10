@@ -1,0 +1,29 @@
+﻿@page
+@model BankAppEF.Pages.TransactionHistoryModel
+@{
+    ViewData["Title"] = "TransactionHistory";
+}
+
+<h2>Transaction History</h2>
+<table class="table">
+    <tr>
+
+        <th>Transaction Date</th>
+        <th>Checking AcctNum</th>
+        <th>Saving AcctNum</th>
+        <th>Amount</th>
+        <th>TransactionFee</th>
+        <th>Transaction Name</th>
+    </tr>
+    @foreach(var item in Model.Transactions)
+    {
+        <tr>
+            <td>@item.TransactionDate</td>
+            <td>@item.CheckingAccountNumber</td>
+            <td>@item.SavingAccountNumber</td>
+            <td>@item.Amount</td>
+            <td>@item.TransactionFee</td>
+            <td>@item.TransactionTypeName</td>
+        </tr>
+    }
+</table>

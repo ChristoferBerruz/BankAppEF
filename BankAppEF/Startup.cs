@@ -1,3 +1,4 @@
+using BankAppEF.Cache;
 using BankAppEF.Data;
 using BankAppEF.ServicesBusiness;
 using BankAppEF.Utils;
@@ -46,8 +47,11 @@ namespace BankAppEF
 
             // Other config
             services.AddHttpContextAccessor();
+            services.AddDbContext<Models.MYBANKContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("MYBANK")));
             services.AddScoped<IBusinessBanking, BusinessBanking>();
             services.AddScoped<IBusinessAuthentication, BusinessAuthentication>();
+            services.AddSingleton<CacheAbstraction>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,7 +68,9 @@ namespace BankAppEF
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            var appServices = app.ApplicationServices;
+            var cacheService = appServices.GetRequiredService<CacheAbstraction>();
+            CacheAbstractionHelper.CABS = cacheService;
             app.UseSession();
             HttpContextHelper.Configure(app.ApplicationServices.GetRequiredService <IHttpContextAccessor>());
             app.UseHttpsRedirection();
