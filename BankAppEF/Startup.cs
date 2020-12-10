@@ -1,6 +1,9 @@
 using BankAppEF.Data;
+using BankAppEF.ServicesBusiness;
+using BankAppEF.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -33,6 +36,18 @@ namespace BankAppEF
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
+            // Session setup
+            services.AddDistributedMemoryCache();
+            services.AddSession(options => 
+            {
+                options.Cookie.Name = ".CBSite.SessionID";
+                options.IdleTimeout = TimeSpan.FromMinutes(5);
+            });
+
+            // Other config
+            services.AddHttpContextAccessor();
+            services.AddScoped<IBusinessBanking, BusinessBanking>();
+            services.AddScoped<IBusinessAuthentication, BusinessAuthentication>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +65,8 @@ namespace BankAppEF
                 app.UseHsts();
             }
 
+            app.UseSession();
+            HttpContextHelper.Configure(app.ApplicationServices.GetRequiredService <IHttpContextAccessor>());
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
